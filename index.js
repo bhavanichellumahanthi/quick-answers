@@ -203,21 +203,27 @@ app.post("/api/generate-questions", generationLimiter, async (req, res) => {
   }
 });
 
-if (PRODUCTION) {
-  app.use(express.static(path.join(ROOT, "dist")));
-  app.get("*", (_req, res) => res.sendFile(path.join(ROOT, "dist", "index.html")));
-} else {
-  const vite = await createViteServer({
-    root: ROOT,
-    configFile: path.join(ROOT, "vite.config.js"),
-    server: { middlewareMode: true },
-    appType: "spa",
-  });
-  app.use(vite.middlewares);
+if (!process.env.VERCEL) {
+  if (PRODUCTION) {
+    app.use(express.static(path.join(ROOT, "dist")));
+    app.get("*", (_req, res) => res.sendFile(path.join(ROOT, "dist", "index.html")));
+  } else {
+    const vite = await createViteServer({
+      root: ROOT,
+      configFile: path.join(ROOT, "vite.config.js"),
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
+  }
 }
 
-app.listen(PORT, () => {
-  console.log(`Quick Answer running at http://localhost:${PORT}`);
-  console.log(`OpenRouter model: ${MODEL}`);
-  console.log(`OpenRouter key configured: ${Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim() && process.env.OPENROUTER_API_KEY !== "PASTE_YOUR_OPENROUTER_API_KEY_HERE")}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Quick Answer running at http://localhost:${PORT}`);
+    console.log(`OpenRouter model: ${MODEL}`);
+    console.log(`OpenRouter key configured: ${Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim() && process.env.OPENROUTER_API_KEY !== "PASTE_YOUR_OPENROUTER_API_KEY_HERE")}`);
+  });
+}
+
+export default app;

@@ -116,6 +116,26 @@ npm run preview
 
 Keep `.env` on the machine running the Node app; never upload it to a static hosting provider or commit it to source control. A production deployment needs a server or serverless function to protect the key.
 
+## Deploy to Vercel
+
+The Vercel function in `api/[...path].js` serves the Express API while Vercel serves the built Vite frontend. The OpenRouter key stays in Vercel's server-side environment variables.
+
+1. In the [Vercel dashboard](https://vercel.com/), choose **Add New → Project** and import `bhavanichellumahanthi/quick-answers` from GitHub.
+2. Keep the detected Vite framework settings, with `npm run build` as the build command and `dist` as the output directory.
+3. Before deploying, add these environment variables in the project settings. Select every environment where you want the app available:
+
+   ```env
+   OPENROUTER_API_KEY=your_real_openrouter_api_key
+   OPENROUTER_MODEL=openai/gpt-4o-mini
+   OPENROUTER_SITE_URL=https://your-project.vercel.app
+   ```
+
+   Do not add the key to frontend settings prefixed with `VITE_`, commit it to GitHub, or set it in `.env.example`.
+4. Click **Deploy**. Vercel will also redeploy automatically when you push changes to the connected GitHub repository.
+5. After deployment, visit `https://your-project.vercel.app/api/health`. The response should include `"ok": true` and `"configured": true`.
+
+If you add or change an environment variable later, redeploy the project for it to take effect. Keep the OpenRouter key private.
+
 ## Security and limitations
 
 - This project sends only quiz configuration to the local API; the OpenRouter key is not exposed in the browser bundle. The key is held server-side by the Node process.

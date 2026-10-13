@@ -3,7 +3,6 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import express from "express";
 import rateLimit from "express-rate-limit";
-import { createServer as createViteServer } from "vite";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(ROOT, ".env") });
@@ -208,6 +207,7 @@ if (!process.env.VERCEL) {
     app.use(express.static(path.join(ROOT, "dist")));
     app.get("*", (_req, res) => res.sendFile(path.join(ROOT, "dist", "index.html")));
   } else {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       root: ROOT,
       configFile: path.join(ROOT, "vite.config.js"),

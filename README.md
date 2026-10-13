@@ -1,81 +1,174 @@
-# Quick Answer — root `.env` edition
+# ⚡ Quick Answer — AI Quiz Studio
 
-Quick Answer is a React + Vite quiz app with OpenRouter-generated MCQs, a timed quiz experience, results analytics, saved history, and a custom question manager. This edition removes the `server/` folder and runs the frontend and API from a **single root command**.
+> A browser-based AI quiz studio that generates educational MCQs on demand, tracks your performance, and lets you build your own question bank — all wrapped in a premium dark-themed UI.
 
-## Project structure
+🔗 **Live Demo** → [quick-answers-bhavani.vercel.app](https://quick-answers-bhavani.vercel.app)
+
+![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?logo=vercel&logoColor=white)
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 🤖 **AI Question Generation** | Generates original MCQs using OpenRouter (GPT-4o-mini or any supported model) |
+| 📚 **13 Subjects** | General Knowledge, Science, Mathematics, Computer Science, English, Biology, Physics, Chemistry, DBMS, Operating Systems, Data Structures, Web Technologies, AI |
+| 🎯 **3 Difficulty Levels** | Easy, Medium, Hard — matched to the selected standard |
+| 🏫 **5 Academic Standards** | Classes 6–8, 9–10, 11–12, Undergraduate, Other |
+| ⏱ **60-Second Timer** | Per-question countdown with visual progress bar |
+| 🔒 **Answer Locking** | One attempt per question — feedback appears immediately after submission |
+| 📊 **Performance Analytics** | Score ring, accuracy %, correct/incorrect/unanswered breakdown, total time, average per question |
+| 📝 **Detailed Answer Review** | Full question review with your answer, correct answer, and explanation |
+| 📜 **Quiz History** | Saved in browser storage — review any past attempt anytime |
+| 🧪 **Question Lab** | Create, edit, delete your own custom MCQs for offline practice |
+| 🔄 **Resume After Refresh** | Active quiz state persists across page reloads |
+| 🌙 **Premium Dark UI** | Animated aurora gradient, glassmorphism panels, smooth micro-animations |
+| 📱 **Fully Responsive** | Optimized for desktop, tablet, and mobile screens |
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                   Browser                        │
+│  React 19 + Vite (SPA)                          │
+│  ┌───────────┐ ┌──────────┐ ┌────────────────┐  │
+│  │ SetupScreen│ │QuizScreen│ │ ResultsScreen  │  │
+│  └───────────┘ └──────────┘ └────────────────┘  │
+│  ┌───────────┐ ┌──────────────────────────────┐  │
+│  │HistoryScr │ │ QuestionManager (Lab)        │  │
+│  └───────────┘ └──────────────────────────────┘  │
+│                    │ fetch /api/*                 │
+└────────────────────┼─────────────────────────────┘
+                     ▼
+┌─────────────────────────────────────────────────┐
+│              Node.js / Express API               │
+│              (index.js — root)                   │
+│                                                  │
+│  POST /api/generate-questions                    │
+│   → validates settings                           │
+│   → calls OpenRouter API                         │
+│   → validates AI response                        │
+│   → returns sanitised questions                  │
+│                                                  │
+│  GET /api/health                                 │
+│   → returns service status                       │
+└─────────────────────┬───────────────────────────┘
+                      ▼
+            ┌──────────────────┐
+            │  OpenRouter API   │
+            │  (GPT-4o-mini)    │
+            └──────────────────┘
+```
+
+---
+
+## 📂 Project Structure
 
 ```text
 quick-answer/
-├── index.html
-├── index.js                  # Root Node/Express API + Vite dev server
-├── package.json
-├── .env.example
-├── .env                      # Create this locally; never commit it
+├── index.html              # Vite entry HTML
+├── index.js                # Express API + Vite dev server (single root process)
+├── package.json            # Dependencies and scripts
+├── vite.config.js          # Vite + React plugin config
+├── vercel.json             # Vercel routing (API rewrites + SPA fallback)
+├── .env                    # Local env vars (never committed)
+├── .env.example            # Template for .env
 ├── .gitignore
-├── vite.config.js
+├── api/
+│   └── [...path].js        # Vercel serverless function entry point
+├── public/
+│   └── logo.png            # App favicon and brand logo
 └── src/
-    ├── main.jsx
-    ├── App.jsx
-    ├── App.css
-    ├── index.css
+    ├── main.jsx             # React entry point
+    ├── App.jsx              # Root component — routing, quiz state, timer logic
+    ├── App.css              # All component styles (single file)
+    ├── index.css            # Global resets, fonts, CSS variables, animations
     ├── components/
-    │   ├── SetupScreen.jsx
-    │   ├── QuizScreen.jsx
-    │   ├── ResultsScreen.jsx
-    │   ├── HistoryScreen.jsx
-    │   └── QuestionManager.jsx
+    │   ├── SetupScreen.jsx   # Quiz configuration form
+    │   ├── QuizScreen.jsx    # Live quiz with timer, options, feedback
+    │   ├── ResultsScreen.jsx # Score ring, stats, full answer review
+    │   ├── HistoryScreen.jsx # Past attempts timeline
+    │   └── QuestionManager.jsx # Custom question CRUD
     ├── data/
-    │   └── quizConfig.js
+    │   └── quizConfig.js    # Shared constants (subjects, levels, standards)
     └── utils/
-        ├── openRouter.js
-        └── quizUtils.js
+        ├── openRouter.js    # Frontend API client for /api/generate-questions
+        └── quizUtils.js     # localStorage helpers, formatting, shuffle, IDs
 ```
 
-## Requirements
+---
 
-- Node.js 20 or newer recommended
-- An OpenRouter account and API key
-- Internet access for generating questions
+## 🔧 Tech Stack
 
-## Setup on Windows / VS Code
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite 6, Vanilla CSS |
+| Backend | Node.js 20+, Express 4 |
+| AI Provider | [OpenRouter](https://openrouter.ai) (GPT-4o-mini default) |
+| Fonts | Space Grotesk, DM Sans (Google Fonts) |
+| Storage | Browser localStorage |
+| Rate Limiting | express-rate-limit (12 requests / 15 min) |
+| Deployment | Vercel (serverless functions + static hosting) |
 
-1. Extract the project ZIP and open its root folder in VS Code. The root folder is the one containing `package.json` and `index.js`.
-2. In the VS Code terminal, install the dependencies:
+---
 
-   ```powershell
+## 🚀 Local Development Setup
+
+### Prerequisites
+
+- **Node.js 20+** — [download here](https://nodejs.org)
+- **OpenRouter API key** — [get one free](https://openrouter.ai/keys)
+
+### Steps
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/bhavanichellumahanthi/quick-answers.git
+   cd quick-answers
+   ```
+
+2. **Install dependencies**
+
+   ```bash
    npm install
    ```
 
-3. Create your `.env` file from the example:
+3. **Create your `.env` file**
 
-   ```powershell
-   Copy-Item .env.example .env
+   ```bash
+   cp .env.example .env
    ```
 
-   Then open the **root** `.env` and enter your own OpenRouter key and preferred model:
+   Then edit `.env` with your API key:
 
    ```env
    PORT=5173
-   OPENROUTER_API_KEY=PASTE_YOUR_REAL_OPENROUTER_API_KEY_HERE
+   OPENROUTER_API_KEY=your_real_openrouter_api_key_here
    OPENROUTER_MODEL=openai/gpt-4o-mini
    OPENROUTER_SITE_URL=http://localhost:5173
    ```
 
-   Replace the placeholder on `OPENROUTER_API_KEY`. Do not put the key in React files or use a `VITE_` prefix. `.env` is ignored by Git.
+   > ⚠️ Do **not** prefix the key with `VITE_`. It stays server-side only.
 
-4. Start the entire project with one command from the root folder:
+4. **Start the development server**
 
-   ```powershell
+   ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:5173](http://localhost:5173). Choose a standard, subject, difficulty, topic, and question count. When you press **Start your quiz**, the app requests MCQs from the root API, which reads the credentials from `.env`. The interface does not ask quiz users to paste an API key or choose a model.
+5. **Open the app** → [http://localhost:5173](http://localhost:5173)
 
-Keep the terminal open while using the app. After changing `.env`, stop the app with `Ctrl+C` and rerun `npm run dev`.
+### Verify Configuration
 
-## Check the configuration
-
-Open [http://localhost:5173/api/health](http://localhost:5173/api/health). Expected output resembles:
+Visit [http://localhost:5173/api/health](http://localhost:5173/api/health):
 
 ```json
 {
@@ -85,60 +178,86 @@ Open [http://localhost:5173/api/health](http://localhost:5173/api/health). Expec
 }
 ```
 
-`configured: true` only indicates a non-placeholder key exists. It does not prove the key has credits or permission to use the selected model. When generation fails, read the error shown in the app and the details printed in the VS Code terminal. The app includes clearer messages for invalid keys, insufficient credits, model errors, rate limits, timeouts, and invalid AI JSON.
+`"configured": true` means the API key is detected. If generation fails, check the terminal for detailed error messages.
 
-## Features
+---
 
-- OpenRouter MCQ generation based on user customisation
-- Supported question counts: 5, 10, and 20
-- Difficulty, standard, subject/stream, and optional topic controls
-- 60-second per-question browser timer and answer locking
-- Immediate answer feedback and explanations
-- Score, accuracy, answer review, and timing analytics
-- Resume after refresh using local browser storage
-- Browser-saved quiz history
-- Custom Question Lab with create/edit/delete
-- Dark animated gradient and responsive glassmorphism UI
+## 🌐 Vercel Deployment
 
-## Build / production preview
+This project is pre-configured for one-click Vercel deployment.
 
-Build the React assets:
+### How It Works
 
-```powershell
-npm run build
-```
+- **Frontend**: Vite builds static assets into `dist/` → served by Vercel CDN
+- **Backend**: `api/[...path].js` imports the Express app → runs as a Vercel serverless function
+- **Routing**: `vercel.json` routes `/api/*` to the serverless function and everything else to the SPA
 
-To build and run the app as a production-style preview on the same root Node process:
+### Deploy Steps
 
-```powershell
-npm run preview
-```
+1. Go to [vercel.com/new](https://vercel.com/new) and import `bhavanichellumahanthi/quick-answers`
+2. Vercel auto-detects **Vite** — keep the default settings:
+   - Build command: `npm run build`
+   - Output directory: `dist`
+3. Add **environment variables** before deploying:
 
-Keep `.env` on the machine running the Node app; never upload it to a static hosting provider or commit it to source control. A production deployment needs a server or serverless function to protect the key.
+   | Variable | Value |
+   |---|---|
+   | `OPENROUTER_API_KEY` | Your real OpenRouter API key |
+   | `OPENROUTER_MODEL` | `openai/gpt-4o-mini` |
+   | `OPENROUTER_SITE_URL` | `https://your-project.vercel.app` |
 
-## Deploy to Vercel
+4. Click **Deploy** — takes ~1–2 minutes
+5. Verify at `https://your-domain.vercel.app/api/health`
 
-The Vercel function in `api/[...path].js` serves the Express API while Vercel serves the built Vite frontend. The OpenRouter key stays in Vercel's server-side environment variables.
+> Every `git push` to `main` triggers an automatic redeployment.
 
-1. In the [Vercel dashboard](https://vercel.com/), choose **Add New → Project** and import `bhavanichellumahanthi/quick-answers` from GitHub.
-2. Keep the detected Vite framework settings, with `npm run build` as the build command and `dist` as the output directory.
-3. Before deploying, add these environment variables in the project settings. Select every environment where you want the app available:
+---
 
-   ```env
-   OPENROUTER_API_KEY=your_real_openrouter_api_key
-   OPENROUTER_MODEL=openai/gpt-4o-mini
-   OPENROUTER_SITE_URL=https://your-project.vercel.app
-   ```
+## 📜 Available Scripts
 
-   Do not add the key to frontend settings prefixed with `VITE_`, commit it to GitHub, or set it in `.env.example`.
-4. Click **Deploy**. Vercel will also redeploy automatically when you push changes to the connected GitHub repository.
-5. After deployment, visit `https://your-project.vercel.app/api/health`. The response should include `"ok": true` and `"configured": true`.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Express API + Vite dev server (hot reload) |
+| `npm run build` | Build production React assets into `dist/` |
+| `npm run preview` | Build + run in production mode locally |
+| `npm start` | Alias for `npm run dev` |
 
-If you add or change an environment variable later, redeploy the project for it to take effect. Keep the OpenRouter key private.
+---
 
-## Security and limitations
+## 🔐 Security & Privacy
 
-- This project sends only quiz configuration to the local API; the OpenRouter key is not exposed in the browser bundle. The key is held server-side by the Node process.
-- This all-in-one root setup still uses a small Node/Express API in `index.js`; no separate `server/` directory or second terminal is needed. A frontend-only app cannot safely hide an API key stored in `.env`, because Vite client environment variables are bundled for browsers.
-- Quiz answers, active attempts, custom questions, and history are stored in browser storage. They do not sync across devices. The quiz timer and answer evaluation happen in the browser, so this should be treated as a practice app rather than a secure high-stakes exam platform.
-- AI generated questions can be inaccurate. Verify questions before using them for formal assessments.
+- **API key is server-side only** — the OpenRouter key lives in `.env` (local) or Vercel environment variables (deployed). It is **never** exposed in the browser bundle.
+- **No database** — all quiz history, custom questions, and active quiz state are stored in the browser's `localStorage`. Nothing syncs across devices.
+- **Rate limiting** — the `/api/generate-questions` endpoint allows 12 requests per 15 minutes to prevent abuse.
+- **Input validation** — both client and server validate quiz settings. The server also validates AI-generated question format before returning it.
+
+---
+
+## ⚠️ Limitations
+
+- **Practice tool, not an exam platform** — the timer and answer evaluation run in the browser. Motivated users could manipulate them via DevTools.
+- **AI accuracy** — AI-generated questions may contain errors. Always verify questions before using them in formal assessments.
+- **Browser storage** — clearing browser data erases all saved history and custom questions.
+- **Single model** — the app uses one OpenRouter model at a time (configured via `.env`). To change it, update `OPENROUTER_MODEL` and restart/redeploy.
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is open source and available for educational purposes.
+
+---
+
+<p align="center">
+  <strong>QUICK ANSWER</strong> · Built for better thinking 🧠
+</p>
